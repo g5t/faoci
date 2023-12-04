@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=60", "setuptools_scm>=8.0", "tox>=4.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "faoci"
+requires-python =" >=3.9"
+dependencies = [
+    'zenlog==1.1,',
+    'platformdirs==3.11',
+    "importlib_metadata; python_version<'3.8'",
+    'confuse>=2.0.1',
+    'requests>=2.31.0',
+]
+readme = "README.md"
+authors = [
+    { name = "Gregory Tucker", email = "gregory.tucker@ess.eu" },
+]
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+faoci-fetch = "faoci.fetch:entrypoint"
+
+[tool.setuptools_scm]
+
+[tool.setuptools.packages.find]
+where = ['src']
+include = ['faoci*']
+
+[tool.setuptools.package-data]
+faoci = ["*.yaml"]
+
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    min_version = 4.0
+    env_list =
+        py312
+        py311
+        py310
+        py39
+        type
+
+    [testenv]
+    deps =
+        pytest
+    commands = pytest test
+
+    [testenv:type]
+    deps = mypy
+    commands = mypy src
+"""
