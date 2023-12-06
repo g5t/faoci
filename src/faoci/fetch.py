@@ -51,7 +51,7 @@ def entrypoint():
     output = f'Day{args.day:02d}.txt' if args.output is None else args.output
     content = fetch(args.day, args.year)
     with open(output, 'w') as file:
-        file.write(output)
+        file.write(content)
         
     if not args.quiet:
         import sys
