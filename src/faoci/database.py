@@ -1,5 +1,5 @@
 from __future__ import annotations
-from sqlmodel import Field, SQLModel, Session, select
+from sqlmodel import Field, SQLModel, Session, select, TIMESTAMP, Column
 from datetime import datetime, timedelta
 from .cache import setup_database
 from .fetch import _now
@@ -14,25 +14,16 @@ class Input(SQLModel, table=True):
 
 class Time(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    year: int
-    month: int
-    day: int
-    hour: int
-    minute: int
-    second: int
-    microsecond: int
-    timezone: str | None
+    timestamp: datetime = Field(sa_column=Column(TIMESTAMP(timezone=True), nullable=False,))
 
-    @classmethod
-    def from_datetime(cls, d):
-        return Time(year=d.year, month=d.month, day=d.day, hour=d.hour, minute=d.second, microsecond=d.microsecond,
-                    timezone=d.tzinfo.key if d.tzinfo is not None and hasattr(d.tzinfo, 'key') else None)
-
-    def to_datetime(self) -> datetime:
-        from zoneinfo import ZoneInfo
-        return datetime(year=self.year, month=self.month, day=self.day, hour=self.hour, minute=self.minute,
-                        second=self.second, microsecond=self.microsecond,
-                        tzinfo=ZoneInfo(self.timezone) if self.timezone is not None else ZoneInfo('America/New_York'))
+    # @classmethod
+    # def from_datetime(cls, d: datetime):
+    #     from zoneinfo import ZoneInfo
+    #     return Time(timestamp=d.astimezone(ZoneInfo('UTC')).timestamp())
+    #
+    # def to_datetime(self) -> datetime:
+    #     from zoneinfo import ZoneInfo
+    #     return datetime.fromtimestamp(self.timestamp).astimezone(ZoneInfo('UTC'))
 
 
 ENGINE = setup_database('database')
@@ -59,22 +50,17 @@ def get_database_timestamp():
             n = _now()
             is_jan = n.month == 1
             n.replace(year=n.year - 1 if is_jan else n.year, month=12 if is_jan else n.month - 1, day=1)
-            session.add(Time.from_datetime(n))
+            session.add(Time(timestamp=n))
             session.commit()
             return n
         else:
-            return time.to_datetime()
+            return time.timezone
 
 
 def set_database_timestamp(t: datetime):
     with Session(ENGINE) as session:
-        if session.get(Time, 1) is None:
-            session.add(Time.from_datetime(t))
-        else:
-            time = Time.from_datetime(t)
-            time.id = 1
-            session.add(time)
-            session.commit()
+        session.add(Time(id=1, timestamp=t))
+        session.commit()
 
 
 def get_database_content(year: int, day: int) -> str | None:
