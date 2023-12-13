@@ -54,12 +54,13 @@ def get_database_timestamp():
             session.commit()
             return n
         else:
-            return time.timezone
+            return time.timestamp
 
 
 def set_database_timestamp(t: datetime):
     with Session(ENGINE) as session:
-        session.add(Time(id=1, timestamp=t))
+        time = session.get(Time, 1)
+        time.timestamp = t
         session.commit()
 
 
