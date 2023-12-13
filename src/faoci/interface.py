@@ -1,12 +1,9 @@
-from .fetch import _now
-from .database import create_database_and_tables, get_database_content
-
-
 def fetch(*, year: int, day: int) -> str:
+    from .database import create_database_and_tables, retrieve_content
     # Ensure the database exists, and that we have connection to it:
     create_database_and_tables()
     # Grab the file contents from the database, or populate the contents and return them
-    content = get_database_content(year=year, day=day)  # content = fetch(args.day, args.year)
+    content = retrieve_content(year=year, day=day)  # content = fetch(args.day, args.year)
     return content
 
 
@@ -16,6 +13,7 @@ def fetch_lines(*, year: int, day: int) -> list[str]:
 
 def entrypoint():
     from argparse import ArgumentParser
+    from .fetch import _now
     now = _now()
 
     parser = ArgumentParser(description='Grab an input file from Advent of Code')
