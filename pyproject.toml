@@ -25,7 +25,7 @@ dynamic = ["version"]
 test = ["pytest"]
 
 [project.scripts]
-faoci-fetch = "faoci.fetch:entrypoint"
+faoci-fetch = "faoci.interface:entrypoint"
 
 [tool.setuptools_scm]
 

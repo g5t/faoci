@@ -1,5 +1,5 @@
 from .config import config
-from .fetch import fetch
+from .interface import fetch, fetch_lines
 
 __all__ = [
    'config',

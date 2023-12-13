@@ -6,7 +6,7 @@ def _now():
     return datetime.now(timezone.utc).astimezone(ZoneInfo('America/New_York'))
 
 
-def fetch(day: int, year: int):
+def fetch(*, day: int, year: int):
     import requests
     from faoci import config
     
@@ -23,8 +23,8 @@ def fetch(day: int, year: int):
     if not session_cookie.exists() or session_cookie.get() is None:
         raise ValueError('Provide your authentication session cookie from, e.g., '
                          '`https://adventofcode.com/2015/day/1/input`\n'
-                         'as an evironment variable, FAOCI_SESSION={xxx},'
-                         ' or an entry `session: {xxx}` in {config.config_dir()}/config.yaml')
+                         'as an environment variable, FAOCI_SESSION={xxx},'
+                         f' or an entry `session: {{xxx}}` in {config.config_dir()}/config.yaml')
 
     session = requests.Session()
     request = session.get(f'https://adventofcode.com/{year}/day/{day}/input',
@@ -34,31 +34,6 @@ def fetch(day: int, year: int):
         raise RuntimeError('Fetching input failed with error {request.reason}')
         
     return request.text
-    
 
-def entrypoint():
-    from argparse import ArgumentParser
-    now = _now()
-    
-    parser = ArgumentParser(description='Grab an input file from Advent of Code')
-    parser.add_argument('-y', '--year', type=int, help='the year to fetch from', default=now.year)
-    parser.add_argument('-d', '--day', type=int, help='the day of advent to fetch', default=now.day)
-    parser.add_argument('-o', '--output', type=str, help='the output filename', default=None)
-    parser.add_argument('-q', '--quiet', action='store_true', help='quiet operation')
-    
-    args = parser.parse_args()
-    
-    output = f'Day{args.day:02d}.txt' if args.output is None else args.output
-    content = fetch(args.day, args.year)
-    with open(output, 'w') as file:
-        file.write(content)
-        
-    if not args.quiet:
-        import sys
-        print('\n'.join(content.split('\n')[:10]), file=sys.stderr)
-        
-    
-    
-    
     
     
