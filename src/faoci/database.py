@@ -43,24 +43,28 @@ def create_database_and_tables():
     SQLModel.metadata.create_all(ENGINE)
 
 
-def get_database_timestamp():
+def get_database_timestamp() -> datetime:
+    """Retrieve the latest timestamp from the database as a time-zone-aware America/New_York datetime object"""
+    from zoneinfo import ZoneInfo
     with Session(ENGINE) as session:
         time = session.get(Time, 1)
         if time is None:
-            n = _now()
+            n = _now()  # this _is_ an America/New_York time zone timestamp
             is_jan = n.month == 1
             n.replace(year=n.year - 1 if is_jan else n.year, month=12 if is_jan else n.month - 1, day=1)
             session.add(Time(timestamp=n))
             session.commit()
             return n
         else:
-            return time.timestamp
+            return time.timestamp.astimezone(ZoneInfo('America/New_York'))
 
 
 def set_database_timestamp(t: datetime):
+    from zoneinfo import ZoneInfo
     with Session(ENGINE) as session:
         time = session.get(Time, 1)
-        time.timestamp = t
+        # this is likely only ever called with America/New_York timestamps, but convert it just in case
+        time.timestamp = t.astimezone(ZoneInfo('America/New_York'))
         session.commit()
 
 
